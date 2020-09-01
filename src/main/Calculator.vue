@@ -1,6 +1,6 @@
 <template>
   <div class="calculator">
-    <Display value="1000" />
+    <Display :value="displayValue" />
     <Button label="AC" triple @on-click="clearMemory" />
     <Button label="/" operation @on-click="setOperation" />
     <Button label="7" @on-click="addDigit" />
@@ -26,11 +26,61 @@ import Button from "../components/Button";
 import Display from "../components/Display";
 
 export default {
+  data() {
+    return {
+      displayValue: 0,
+      clearDisplay: true,
+      operation: null,
+      values: [0, 0],
+      current: 0,
+    };
+  },
   components: { Button, Display },
   methods: {
-    clearMemory() {},
-    setOperation(operation) {},
-    addDigit(digit) {},
+    clearMemory() {
+      Object.assign(this.$data, this.$options.data());
+    },
+    setOperation(operation) {
+      if (this.current === 0) {
+        this.operation = operation;
+        this.current = 1;
+        this.clearDisplay = true;
+      } else {
+        const equals = operation === "=";
+        const currentOperation = this.operation;
+
+        try {
+          this.values[0] = eval(
+            `${this.values[0]} ${currentOperation} ${this.values[1]}`
+          );
+        } catch (err) {
+          this.$emit("onError", err);
+        }
+
+        this.values[1] = 0;
+        this.displayValue = this.values[0];
+        this.operation = equals ? null : operation;
+        this.current = equals ? 0 : 1;
+        this.clearDisplay = !equals;
+      }
+    },
+    addDigit(digit) {
+      if (digit === "." && this.displayValue.includes(".")) return;
+
+      const clearDisplay = this.displayValue === "0" || this.clearDisplay;
+      const currentValue = clearDisplay ? "" : this.displayValue;
+      const displayValue = currentValue + digit;
+
+      this.displayValue = displayValue;
+      this.clearDisplay = false;
+      this.values[this.current] = displayValue;
+
+      //   if (digit !== ".") {
+      //     const i = this.current;
+      //     const newValue = parseFloat(displayValue);
+      //     this.values[i] = newValue;
+      //   }
+    },
   },
 };
 </script>
