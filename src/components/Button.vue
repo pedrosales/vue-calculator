@@ -1,5 +1,9 @@
 <template>
-  <button class="button" :class="{double, triple, operation}">{{ label }}</button>
+  <button
+    class="button"
+    :class="{double, triple, operation}"
+    @click="$emit('on-click', label)"
+  >{{ label }}</button>
 </template>
 
 <script>
